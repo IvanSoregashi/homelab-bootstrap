@@ -16,7 +16,7 @@ personally identifiable information.
 - First-boot secrets bootstrap (Bitwarden → local env/password files).
 - Interactive disk setup (ZFS pools, encrypted datasets, ext4 partitions).
 - Directory scaffolding, bind-mount abstraction, and app directory creation.
-- System hardening (eMMC/SSD write reduction: swap, logs, Docker root).
+- System optimization (eMMC/SSD write reduction: swap, logs, Docker root).
 - Application helpers that create directories and align permissions.
 
 ## Sibling Repository
@@ -70,14 +70,32 @@ repo contains no details about private repo contents beyond that description.
 
 ## Current State
 
-The repo is mid-refactor. The `old_utsuwa/` directory contains the original
-monolithic scripts. Future work will reorganize into:
+The repo has been refactored from the old monolithic `old_utsuwa/` scripts.
+The `old_utsuwa/` directory remains for reference only.
+
+Current structure:
 
 ```
-├── bootstrap.sh
-├── scripts/           # setup-drives, setup-directories, harden-system, install-docker
-├── lib/               # common, zfs, ext4 helper functions
-├── apps/              # per-application directory setup scripts
+├── bootstrap.sh             # Secrets bootstrap (Bitwarden → local env files)
+├── setup-utsuwa.sh          # Full orchestration entry point
+├── scripts/                 # setup-drives, setup-directories, optimize-system,
+│                            # install-docker, install-bw, install-restic,
+│                            # install-tailscale, clone-private-repo, restore-backup
+├── lib/                     # common, zfs, ext4, platform helper functions
+├── debian/                  # Debian-specific scripts
+│   ├── install-docker.sh
+│   ├── install-zfs.sh
+│   ├── setup-ext4.sh
+│   ├── optimize.sh
+│   └── optimize/            # memory, logs, filesystem, docker (write reduction)
+├── apps/                    # per-application directory setup scripts
+├── old_utsuwa/              # original monolithic scripts (reference only)
 ├── AGENTS.md
 └── README.md
 ```
+
+## OS Abstraction
+
+`scripts/` entry points detect the OS via `lib/platform.sh` and source the
+appropriate distribution-specific scripts from `debian/` (or future `rhel/`,
+`arch/` directories). The `lib/` functions are distribution-agnostic.
