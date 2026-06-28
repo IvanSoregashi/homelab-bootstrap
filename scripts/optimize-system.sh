@@ -18,8 +18,8 @@ DATA_PATH=$(realpath "$1")
 header "                 SYSTEM OPTIMIZATION"
 
 if os_is_debian; then
-    source "${SCRIPT_DIR}/../debian/optimize.sh"
-    debian_optimize_system "$DATA_PATH"
+    source "${SCRIPT_DIR}/../lib/system_optimizations.sh"
+    debian_optimize_mmc_writes "$DATA_PATH"
 else
     info "No distribution-specific optimization available for $(detect_os)."
     echo "  Skipping system optimization."

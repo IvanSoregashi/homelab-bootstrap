@@ -1,9 +1,14 @@
 #!/bin/bash
 
-debian_optimize_logs() {
-    local script_dir
-    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    source "${script_dir}/../../lib/common.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/common.sh"
+
+debian_throttle_journal() {
+    if grep -q "SystemMaxUse=100M" /etc/systemd/journald.conf 2>/dev/null && \
+       grep -q "MaxLevelStore=info" /etc/systemd/journald.conf 2>/dev/null; then
+        echo "  Journal already throttled. Skipping."
+        return 0
+    fi
 
     echo -e "--> Throttling systemd journal writes..."
 

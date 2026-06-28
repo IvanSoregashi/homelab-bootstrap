@@ -12,8 +12,8 @@ server.
 ├── scripts/                 # setup-drives, setup-directories, optimize-system,
 │                            # install-docker, install-bw, install-restic,
 │                            # install-tailscale, clone-private-repo, restore-backup
-├── lib/                     # common, zfs, ext4, platform helpers
-├── debian/                  # Debian-specific install & optimization scripts
+├── lib/                     # common, platform, docker, ram, journal, atime,
+│                            # zfs, ext4, system_optimizations helpers
 └── old_utsuwa/              # Pre-refactor scripts (reference only)
 ```
 

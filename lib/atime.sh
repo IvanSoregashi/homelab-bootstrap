@@ -1,9 +1,13 @@
 #!/bin/bash
 
-debian_optimize_filesystem() {
-    local script_dir
-    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    source "${script_dir}/../../lib/common.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/common.sh"
+
+debian_disable_atime() {
+    if mount | grep " / " | grep -q "noatime"; then
+        echo "  Root filesystem already has noatime. Skipping."
+        return 0
+    fi
 
     echo -e "--> Optimizing Filesystem for eMMC/SSD longevity..."
 

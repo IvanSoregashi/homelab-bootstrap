@@ -10,7 +10,7 @@ SYS_USER="${1:-$(detect_user)}"
 header "                 DOCKER ENGINE INSTALL"
 
 if os_is_debian; then
-    source "${SCRIPT_DIR}/../debian/install-docker.sh"
+    source "${SCRIPT_DIR}/../lib/docker.sh"
     debian_install_docker "$SYS_USER"
 else
     error "No distribution-specific Docker installation available for $(detect_os)."

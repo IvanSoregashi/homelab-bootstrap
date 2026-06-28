@@ -83,12 +83,13 @@ Current structure:
 ├── lib/                     # Distribution-agnostic helpers
 │   ├── common.sh            #   colors, logging, user detection, mount ops, disk scan
 │   ├── platform.sh          #   OS detection (detect_os, os_is_debian)
+│   ├── docker.sh            #   install + relocate Docker engine
+│   ├── ram.sh               #   ZRAM, swapfile, swappiness tuning
+│   ├── journal.sh           #   systemd journal throttling
+│   ├── atime.sh             #   noatime filesystem tuning
 │   ├── zfs.sh               #   pool/dataset creation, ARC config, ensure-installed
-│   └── ext4.sh              #   partitioning, formatting, fstab, ensure-tools
-├── debian/                  # Debian-only scripts (sourced on demand)
-│   ├── install-docker.sh    #   Official Docker repo + engine
-│   ├── optimize.sh          #   Write-reduction orchestrator
-│   └── optimize/            #   memory, logs, filesystem, docker sub-scripts
+│   ├── ext4.sh              #   partitioning, formatting, fstab, ensure-tools
+│   └── system_optimizations.sh #   eMMC/SSD write reduction orchestrator
 ├── old_utsuwa/              # Original monolithic scripts (reference only)
 ├── AGENTS.md
 └── README.md
@@ -96,6 +97,5 @@ Current structure:
 
 ## OS Abstraction
 
-`scripts/` entry points detect the OS via `lib/platform.sh` and source the
-appropriate distribution-specific scripts from `debian/` (or future `rhel/`,
-`arch/` directories). The `lib/` functions are distribution-agnostic.
+`scripts/` entry points detect the OS via `lib/platform.sh` and call the
+appropriate library functions. The `lib/` functions are distribution-agnostic.
