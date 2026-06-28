@@ -53,8 +53,8 @@ echo "=== PHASE 6: Writing Restic Environment & Password Files ==="
 mkdir -p /srv/encrypted/app/restic/
 
 # Write your passwords to their local files [1.2.9]
-echo "$CORE_PW" > /srv/encrypted/app/restic/restic-pw.txt
-echo "$DATA_PW" > /srv/encrypted/app/restic/restic-data-pw.txt
+echo "$CORE_PW" > /srv/encrypted/app/restic/core-pw
+echo "$DATA_PW" > /srv/encrypted/app/restic/data-pw
 
 # --- THE FIX: Saving the B2 IDs & Keys for your automated scripts ---
 # We write them to local, executable shell configurations.
@@ -62,18 +62,20 @@ echo "$DATA_PW" > /srv/encrypted/app/restic/restic-data-pw.txt
 cat << EOF > /srv/encrypted/app/restic/restic-core-env.sh
 export B2_ACCOUNT_ID="$CORE_ID"
 export B2_ACCOUNT_KEY="$CORE_KEY"
-export RESTIC_PASSWORD_FILE="/srv/encrypted/app/restic/restic-pw.txt"
+export RESTIC_REPOSITORY="b2:utsuwa-backup-core:/"
+export RESTIC_PASSWORD_FILE="/srv/encrypted/app/restic/core-pw"
 EOF
 
 cat << EOF > /srv/encrypted/app/restic/restic-data-env.sh
 export B2_ACCOUNT_ID="$DATA_ID"
 export B2_ACCOUNT_KEY="$DATA_KEY"
-export RESTIC_PASSWORD_FILE="/srv/encrypted/app/restic/restic-data-pw.txt"
+export RESTIC_REPOSITORY="b2:utsuwa-backup-data:/"
+export RESTIC_PASSWORD_FILE="/srv/encrypted/app/restic/data-pw"
 EOF
 
 # Enforce strict POSIX permissions (chmod 400) on all keys and password files [1.2.9]
-chmod 400 /srv/encrypted/app/restic/restic-pw.txt
-chmod 400 /srv/encrypted/app/restic/restic-data-pw.txt
+chmod 400 /srv/encrypted/app/restic/core-pw
+chmod 400 /srv/encrypted/app/restic/data-pw
 chmod 400 /srv/encrypted/app/restic/restic-core-env.sh
 chmod 400 /srv/encrypted/app/restic/restic-data-env.sh
 
