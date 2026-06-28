@@ -1,36 +1,44 @@
 # homelab-bootstrap
 
-Collection of reusable Debian bootstrapping scripts for my homelab servers.
-Initially developed for **Utsuwa** (storage/NAS node) but structured to be
-useful for any Debian server I set up.
+Provisioning scripts for Debian-based homelab servers. Initially scoped to
+**Utsuwa** (storage/NAS node) but structured to be reusable for any Debian
+server.
 
 ## Contents
 
 ```
-├── bootstrap.sh          # Secrets bootstrap via Bitwarden CLI
-├── old_utsuwa/           # Utsuwa-specific provisioning scripts
-│   ├── setup-drives.sh   # Interactive disk/ZFS/ext4 wizard
-│   ├── setup-dirs.sh     # Directory scaffolding + app setup
-│   ├── harden-mmc.sh     # eMMC/SSD write-reduction hardening
-│   └── helpers/          # ZFS, ext4, Docker, app, and hardening helpers
+├── bootstrap.sh             # Secrets bootstrap (Bitwarden → local env files)
+├── setup-utsuwa.sh          # Full Utsuwa setup orchestrator
+├── scripts/                 # setup-drives, setup-directories, optimize-system,
+│                            # install-docker, install-bw, install-restic,
+│                            # install-tailscale, clone-private-repo, restore-backup
+├── lib/                     # common, zfs, ext4, platform helpers
+├── debian/                  # Debian-specific install & optimization scripts
+└── old_utsuwa/              # Pre-refactor scripts (reference only)
 ```
 
 ## Quick Start (Utsuwa)
 
+```bash
+sudo ./setup-utsuwa.sh
 ```
-sudo ./old_utsuwa/setup-drives.sh
-sudo ./old_utsuwa/setup-dirs.sh /vault/secure /bulk
-sudo ./old_utsuwa/harden-mmc.sh /bulk
-./bootstrap.sh
+
+Or run individual steps:
+
+```bash
+sudo ./scripts/setup-drives.sh          # Interactive disk/ZFS/ext4 wizard
+sudo ./scripts/setup-directories.sh /vault/secure /bulk   # Directory + app setup
+sudo ./scripts/optimize-system.sh /bulk # eMMC/SSD write-reduction
+sudo ./bootstrap.sh                     # Secrets from Bitwarden
 ```
 
 ## Requirements
 
 - Debian 12+ (Bookworm)
 - sudo access
-- A Bitwarden or Vaultwarden instance with a "Bootstrap" login item
+- Bitwarden or Vaultwarden instance with a "Utsuwa-Bootstrap" login item
 
 ## Related
 
-A private sibling repository holds node-specific backup scripts, Docker
-Compose files, and secrets. This repo stays 100% public-safe.
+A private sibling repository (`homelab-private`) holds node-specific backup
+scripts, Docker Compose files, and secrets. This repo stays 100% public-safe.

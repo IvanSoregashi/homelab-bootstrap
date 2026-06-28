@@ -23,12 +23,10 @@ SECURE_PATH=$(realpath "$1")
 DATA_PATH=$(realpath "$2")
 SYS_USER=$(detect_user)
 
-header "                 DIRECTORY & APP SETUP"
+header "                 DIRECTORY SETUP"
 echo -e "Secure Path: ${GREEN}$SECURE_PATH${NC}"
 echo -e "Data Path:   ${GREEN}$DATA_PATH${NC}"
 echo -e "System User: ${GREEN}$SYS_USER${NC}"
-
-APPS_DIR="${SCRIPT_DIR}/../apps"
 
 # --- Mount Safety Verification ---
 echo "--> Verifying drive mount safety..."
@@ -57,116 +55,29 @@ else
     echo "  /srv/data is already mounted."
 fi
 
-# --- Application Setup ---
-run_app_setup() {
-    local script_path="$1"
-    local script_name
-    script_name=$(basename "$script_path" .sh)
+# --- Consolidated Directory Creation ---
+echo -e "\n--> Creating directory structure..."
 
-    echo -e "\n${CYAN}------------------------------------------------------------${NC}"
-    echo -e "Executing: ${BOLD}${script_name^^}${NC}"
-    echo -e "${CYAN}------------------------------------------------------------${NC}"
-    bash "$script_path" "$SECURE_PATH" "$DATA_PATH" "$SYS_USER"
-}
+# Tier 1: Encrypted (core data)
+mkdir -p "${SECURE_PATH}/vault"
+mkdir -p "${SECURE_PATH}/archive"
+mkdir -p "${SECURE_PATH}/webdav"
+mkdir -p "${SECURE_PATH}/db-dumps"
+mkdir -p "${SECURE_PATH}/apps/restic"
+mkdir -p "${SECURE_PATH}/apps/syncthing"
+mkdir -p "${SECURE_PATH}/apps/calibre-config"
+mkdir -p "${SECURE_PATH}/apps/immich/db"
 
-run_all_apps() {
-    local -n scripts_ref=$1
-    echo -e "\n--> Initializing ALL applications..."
-    for script in "${scripts_ref[@]}"; do
-        run_app_setup "$script"
-    done
-}
+# Tier 2: Bulk (data)
+mkdir -p "${DATA_PATH}/gallery/immich"
+mkdir -p "${DATA_PATH}/books"
+mkdir -p "${DATA_PATH}/downloads"
+mkdir -p "${DATA_PATH}/backups"
 
-if [ -d "$APPS_DIR" ]; then
-    mapfile -t app_scripts < <(find "$APPS_DIR" -type f -name "*.sh" | sort)
-
-    if [ ${#app_scripts[@]} -eq 0 ]; then
-        echo -e "${YELLOW}No application setup scripts found under ${APPS_DIR}.${NC}"
-    elif [ "${AUTO_APPS:-false}" = "true" ]; then
-        run_all_apps app_scripts
-    else
-        echo -e "\n${BOLD}Application Selection:${NC}"
-        declare -a pretty_names
-        for i in "${!app_scripts[@]}"; do
-            script="${app_scripts[i]}"
-            script_name=$(basename "$script" .sh)
-            pretty_name=$(echo "$script_name" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
-            pretty_names[i]="$pretty_name"
-            echo -e "  $((i + 1))) $pretty_name"
-        done
-        echo -e "  ${BOLD}A) ALL Applications${NC}"
-        echo -e "  ${BOLD}S) SKIP (Base storage layers only)${NC}"
-        echo ""
-
-        while true; do
-            read -r -p "Select apps [1-${#app_scripts[@]}], 'A' for all, or 'S' to skip: " user_input
-
-            if [ -z "${user_input// /}" ] || [[ "$user_input" =~ ^[Ss]$ ]]; then
-                echo -e "\nSkipping application provisioning."
-                break
-            fi
-
-            if [[ "$user_input" =~ ^[Aa]$ ]]; then
-                run_all_apps app_scripts
-                break
-            fi
-
-            cleaned_input="${user_input//,/ }"
-            selected_indices=()
-            invalid_input=false
-
-            for choice in $cleaned_input; do
-                if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#app_scripts[@]}" ]; then
-                    selected_indices+=("$((choice - 1))")
-                else
-                    echo -e "${RED}Invalid selection: $choice${NC}"
-                    invalid_input=true
-                fi
-            done
-
-            if [ "$invalid_input" = true ]; then
-                echo -e "Please try again.\n"
-                continue
-            fi
-
-            declare -A seen
-            dedup_indices=()
-            for idx in "${selected_indices[@]}"; do
-                if [ -z "${seen[$idx]+_}" ]; then
-                    seen[$idx]=1
-                    dedup_indices+=("$idx")
-                fi
-            done
-
-            sorted_indices=($(for idx in "${dedup_indices[@]}"; do echo "$idx"; done | sort -n))
-
-            echo -e "\nYou selected:"
-            for idx in "${sorted_indices[@]}"; do
-                echo -e "  - ${pretty_names[idx]}"
-            done
-            echo ""
-
-            read -r -p "Proceed? (y/n) [y]: " confirm_install
-            confirm_install=${confirm_install:-y}
-            if [[ "$confirm_install" =~ ^[Yy]$ ]]; then
-                echo -e "\n--> Initializing chosen applications..."
-                for idx in "${sorted_indices[@]}"; do
-                    run_app_setup "${app_scripts[idx]}"
-                done
-                break
-            else
-                echo -e "Selection discarded.\n"
-            fi
-        done
-    fi
-else
-    echo -e "${YELLOW}Application directory does not exist at ${APPS_DIR}.${NC}"
-fi
-
-# Base permissions
-echo -e "\n--> Aligning system volume permissions..."
-chown "${SYS_USER}:${SYS_USER}" "$SECURE_PATH" || true
-chown "${SYS_USER}:${SYS_USER}" "$DATA_PATH" || true
+# --- Permission Alignment ---
+echo -e "\n--> Aligning permissions..."
+chown -R "${SYS_USER}:${SYS_USER}" "${SECURE_PATH}" || true
+chown -R "${SYS_USER}:${SYS_USER}" "${DATA_PATH}" || true
 
 echo -e "\n======================================================================"
 echo -e "${GREEN}✔ Initialization Complete!${NC}"

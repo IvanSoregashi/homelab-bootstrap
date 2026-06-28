@@ -18,8 +18,8 @@ if [ -z "$repo_url" ]; then
     exit 0
 fi
 
-read -r -p "Target directory [default: /srv/encrypted/app/private]: " target_dir
-target_dir=${target_dir:-/srv/encrypted/app/private}
+read -r -p "Target directory [default: /srv/encrypted/apps/private]: " target_dir
+target_dir=${target_dir:-/srv/encrypted/apps/private}
 
 if [ -d "$target_dir" ]; then
     echo -e "${YELLOW}Warning: ${target_dir} already exists.${NC}"

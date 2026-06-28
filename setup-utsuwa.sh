@@ -76,11 +76,11 @@ SECURE_SRC=${SECURE_SRC:-/srv/encrypted}
 DATA_SRC=${DATA_SRC:-/srv/data}
 
 # ------------------------------------------------------------------
-# Step 2: Create directory structure and app directories
+# Step 2: Create directory structure
 # ------------------------------------------------------------------
-echo -e "\n${BOLD}[2/7] Directory & Application Setup${NC}"
+echo -e "\n${BOLD}[2/7] Directory Setup${NC}"
 
-AUTO_APPS=true bash "${SCRIPT_DIR}/scripts/setup-directories.sh" "$SECURE_SRC" "$DATA_SRC"
+bash "${SCRIPT_DIR}/scripts/setup-directories.sh" "$SECURE_SRC" "$DATA_SRC"
 echo -e "  ${GREEN}✔${NC} Directories initialized."
 
 # ------------------------------------------------------------------
@@ -136,7 +136,7 @@ if [[ "$setup_ts" =~ ^[Yy]$ ]]; then
     source "${SCRIPT_DIR}/scripts/install-tailscale.sh"
     install_tailscale
 
-    TAILSCALE_KEY_FILE="/srv/encrypted/app/restic/tailscale-key"
+    TAILSCALE_KEY_FILE="/srv/encrypted/apps/restic/tailscale-key"
     if [ -f "$TAILSCALE_KEY_FILE" ]; then
         echo "  Found Tailscale auth key. Connecting..."
         tailscale up --authkey="$(cat "$TAILSCALE_KEY_FILE")"

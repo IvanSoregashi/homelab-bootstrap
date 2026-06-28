@@ -15,9 +15,8 @@ personally identifiable information.
 
 - First-boot secrets bootstrap (Bitwarden → local env/password files).
 - Interactive disk setup (ZFS pools, encrypted datasets, ext4 partitions).
-- Directory scaffolding, bind-mount abstraction, and app directory creation.
+- Directory scaffolding (bind-mount abstraction, tiered storage layout, app paths).
 - System optimization (eMMC/SSD write reduction: swap, logs, Docker root).
-- Application helpers that create directories and align permissions.
 
 ## Sibling Repository
 
@@ -81,15 +80,16 @@ Current structure:
 ├── scripts/                 # setup-drives, setup-directories, optimize-system,
 │                            # install-docker, install-bw, install-restic,
 │                            # install-tailscale, clone-private-repo, restore-backup
-├── lib/                     # common, zfs, ext4, platform helper functions
-├── debian/                  # Debian-specific scripts
-│   ├── install-docker.sh
-│   ├── install-zfs.sh
-│   ├── setup-ext4.sh
-│   ├── optimize.sh
-│   └── optimize/            # memory, logs, filesystem, docker (write reduction)
-├── apps/                    # per-application directory setup scripts
-├── old_utsuwa/              # original monolithic scripts (reference only)
+├── lib/                     # Distribution-agnostic helpers
+│   ├── common.sh            #   colors, logging, user detection, mount ops, disk scan
+│   ├── platform.sh          #   OS detection (detect_os, os_is_debian)
+│   ├── zfs.sh               #   pool/dataset creation, ARC config, ensure-installed
+│   └── ext4.sh              #   partitioning, formatting, fstab, ensure-tools
+├── debian/                  # Debian-only scripts (sourced on demand)
+│   ├── install-docker.sh    #   Official Docker repo + engine
+│   ├── optimize.sh          #   Write-reduction orchestrator
+│   └── optimize/            #   memory, logs, filesystem, docker sub-scripts
+├── old_utsuwa/              # Original monolithic scripts (reference only)
 ├── AGENTS.md
 └── README.md
 ```

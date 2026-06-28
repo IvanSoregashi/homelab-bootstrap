@@ -50,34 +50,34 @@ SSH_PRIVATE_KEY=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="sendo-ss
 
 echo "=== PHASE 6: Writing Restic Environment & Password Files ==="
 # Ensure our secure restic directory exists
-mkdir -p /srv/encrypted/app/restic/
+mkdir -p /srv/encrypted/apps/restic/
 
 # Write your passwords to their local files [1.2.9]
-echo "$CORE_PW" > /srv/encrypted/app/restic/core-pw
-echo "$DATA_PW" > /srv/encrypted/app/restic/data-pw
+echo "$CORE_PW" > /srv/encrypted/apps/restic/core-pw
+echo "$DATA_PW" > /srv/encrypted/apps/restic/data-pw
 
 # --- THE FIX: Saving the B2 IDs & Keys for your automated scripts ---
 # We write them to local, executable shell configurations.
 # Your automated daily backup scripts will simply "source" these files to log in! [1.2.9]
-cat << EOF > /srv/encrypted/app/restic/restic-core-env.sh
+cat << EOF > /srv/encrypted/apps/restic/restic-core-env.sh
 export B2_ACCOUNT_ID="$CORE_ID"
 export B2_ACCOUNT_KEY="$CORE_KEY"
 export RESTIC_REPOSITORY="b2:utsuwa-backup-core:/"
-export RESTIC_PASSWORD_FILE="/srv/encrypted/app/restic/core-pw"
+export RESTIC_PASSWORD_FILE="/srv/encrypted/apps/restic/core-pw"
 EOF
 
-cat << EOF > /srv/encrypted/app/restic/restic-data-env.sh
+cat << EOF > /srv/encrypted/apps/restic/restic-data-env.sh
 export B2_ACCOUNT_ID="$DATA_ID"
 export B2_ACCOUNT_KEY="$DATA_KEY"
 export RESTIC_REPOSITORY="b2:utsuwa-backup-data:/"
-export RESTIC_PASSWORD_FILE="/srv/encrypted/app/restic/data-pw"
+export RESTIC_PASSWORD_FILE="/srv/encrypted/apps/restic/data-pw"
 EOF
 
 # Enforce strict POSIX permissions (chmod 400) on all keys and password files [1.2.9]
-chmod 400 /srv/encrypted/app/restic/core-pw
-chmod 400 /srv/encrypted/app/restic/data-pw
-chmod 400 /srv/encrypted/app/restic/restic-core-env.sh
-chmod 400 /srv/encrypted/app/restic/restic-data-env.sh
+chmod 400 /srv/encrypted/apps/restic/core-pw
+chmod 400 /srv/encrypted/apps/restic/data-pw
+chmod 400 /srv/encrypted/apps/restic/restic-core-env.sh
+chmod 400 /srv/encrypted/apps/restic/restic-data-env.sh
 
 
 echo "=== PHASE 7: Provisioning SSH Key (Optional) ==="

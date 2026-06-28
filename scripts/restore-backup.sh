@@ -6,8 +6,8 @@ source "${SCRIPT_DIR}/../lib/common.sh"
 
 header "              RESTORE FROM BACKUP"
 
-RESTIC_CORE_ENV="/srv/encrypted/app/restic/restic-core-env.sh"
-RESTIC_DATA_ENV="/srv/encrypted/app/restic/restic-data-env.sh"
+RESTIC_CORE_ENV="/srv/encrypted/apps/restic/restic-core-env.sh"
+RESTIC_DATA_ENV="/srv/encrypted/apps/restic/restic-data-env.sh"
 
 if [ ! -f "$RESTIC_CORE_ENV" ] || [ ! -f "$RESTIC_DATA_ENV" ]; then
     warn "Restic environment files not found. Run bootstrap first."
