@@ -1,5 +1,8 @@
 #!/bin/bash
 
+[ -n "${_COMMON_SH_SOURCED:-}" ] && return
+readonly _COMMON_SH_SOURCED=1
+
 # Color constants
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
