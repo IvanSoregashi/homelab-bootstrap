@@ -37,14 +37,14 @@ mkdir -p /srv/encrypted/apps/restic/
 echo "$CORE_PW" > /srv/encrypted/apps/restic/core-pw
 echo "$DATA_PW" > /srv/encrypted/apps/restic/data-pw
 
-cat << EOF > /srv/encrypted/apps/restic/restic-core-env.sh
+cat << EOF > /srv/encrypted/apps/restic/core-env.sh
 export B2_ACCOUNT_ID="$CORE_ID"
 export B2_ACCOUNT_KEY="$CORE_KEY"
 export RESTIC_REPOSITORY="b2:utsuwa-backup-core:/"
 export RESTIC_PASSWORD_FILE="/srv/encrypted/apps/restic/core-pw"
 EOF
 
-cat << EOF > /srv/encrypted/apps/restic/restic-data-env.sh
+cat << EOF > /srv/encrypted/apps/restic/data-env.sh
 export B2_ACCOUNT_ID="$DATA_ID"
 export B2_ACCOUNT_KEY="$DATA_KEY"
 export RESTIC_REPOSITORY="b2:utsuwa-backup-data:/"
@@ -53,8 +53,8 @@ EOF
 
 chmod 400 /srv/encrypted/apps/restic/core-pw
 chmod 400 /srv/encrypted/apps/restic/data-pw
-chmod 400 /srv/encrypted/apps/restic/restic-core-env.sh
-chmod 400 /srv/encrypted/apps/restic/restic-data-env.sh
+chmod 400 /srv/encrypted/apps/restic/core-env.sh
+chmod 400 /srv/encrypted/apps/restic/data-env.sh
 
 echo "=== Provisioning SSH Key (Optional) ==="
 if [ -n "$SSH_PRIVATE_KEY" ]; then
