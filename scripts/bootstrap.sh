@@ -58,21 +58,22 @@ chmod 400 /srv/encrypted/apps/restic/data-env.sh
 
 echo "=== Provisioning SSH Key (Optional) ==="
 if [ -n "$SSH_PRIVATE_KEY" ]; then
-    echo "SSH Private Key found. Configuring ~/.ssh/id_rsa..."
+    echo "SSH Private Key found. Configuring ~/.ssh/id_ed25519..."
     mkdir -p ~/.ssh
     chmod 700 ~/.ssh
-    echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-    chmod 600 ~/.ssh/id_rsa
+    echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    chmod 600 ~/.ssh/id_ed25519
 else
     echo "No SSH Private Key found in Bitwarden. Skipping SSH key setup."
 fi
 
-echo "=== Provisioning Tailscale (Optional) ==="
+echo "=== Provisioning Tailscale Key (Optional) ==="
 if [ -n "$TAILSCALE_KEY" ]; then
-    echo "Tailscale Auth Key found. Connecting to Tailnet..."
-    sudo tailscale up --authkey="$TAILSCALE_KEY"
+    echo "Tailscale Auth Key found. Saving to /srv/encrypted/apps/tailscale-key..."
+    echo "$TAILSCALE_KEY" > /srv/encrypted/apps/tailscale-key
+    chmod 400 /srv/encrypted/apps/tailscale-key
 else
-    echo "No Tailscale Auth Key found in Bitwarden. Skipping automated Tailscale login."
+    echo "No Tailscale Auth Key found in Bitwarden. Skipping."
 fi
 
 echo "=== Secure Cleanup ==="
