@@ -54,8 +54,14 @@ while true; do
         read -r choice
 
         case $choice in
-            1|2|3)
-                bash "${SCRIPT_DIR}/scripts/setup-drives.sh" "--${choice}" "$path"
+            1)
+                bash "${SCRIPT_DIR}/scripts/setup-zfs.sh" "$path"
+                ;;
+            2)
+                bash "${SCRIPT_DIR}/scripts/setup-ext4.sh" "$path"
+                ;;
+            3)
+                bash "${SCRIPT_DIR}/scripts/setup-mount.sh" "$path"
                 ;;
             4)
                 mkdir -p "$path"
