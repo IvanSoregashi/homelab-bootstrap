@@ -20,10 +20,12 @@ bw_login
 echo "=== Retrieving Bootstrap Secrets ==="
 ITEM_JSON=$(bw_get_item "Utsuwa-Bootstrap")
 
+CORE_BUCKET=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="core-bucket") | .value')
 CORE_ID=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="core-id") | .value')
 CORE_KEY=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="core-key") | .value')
 CORE_PW=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="core-pw") | .value')
 
+DATA_BUCKET=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="data-bucket") | .value')
 DATA_ID=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="data-id") | .value')
 DATA_KEY=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="data-key") | .value')
 DATA_PW=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="data-pw") | .value')
@@ -40,14 +42,14 @@ echo "$DATA_PW" > /srv/encrypted/apps/restic/data-pw
 cat << EOF > /srv/encrypted/apps/restic/core-env.sh
 export B2_ACCOUNT_ID="$CORE_ID"
 export B2_ACCOUNT_KEY="$CORE_KEY"
-export RESTIC_REPOSITORY="b2:utsuwa-backup-core:/"
+export RESTIC_REPOSITORY="$CORE_BUCKET:/"
 export RESTIC_PASSWORD_FILE="/srv/encrypted/apps/restic/core-pw"
 EOF
 
 cat << EOF > /srv/encrypted/apps/restic/data-env.sh
 export B2_ACCOUNT_ID="$DATA_ID"
 export B2_ACCOUNT_KEY="$DATA_KEY"
-export RESTIC_REPOSITORY="b2:utsuwa-backup-data:/"
+export RESTIC_REPOSITORY="$DATA_BUCKET:/"
 export RESTIC_PASSWORD_FILE="/srv/encrypted/apps/restic/data-pw"
 EOF
 
@@ -61,7 +63,12 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
     echo "SSH Private Key found. Configuring ~/.ssh/id_ed25519..."
     mkdir -p ~/.ssh
     chmod 700 ~/.ssh
-    echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    # Normalize PEM: Bitwarden custom fields flatten newlines to spaces.
+    # Split header/footer onto their own lines, then replace remaining
+    # spaces (within the base64 body) with newlines.
+    echo "$SSH_PRIVATE_KEY" | \
+        sed -E 's/(-----BEGIN[^-]+-----) /\1\n/g; s/ (-----END[^-]+-----)/\n\1/g' | \
+        awk '!/^-----/ { gsub(/ /, "\n") } 1' > ~/.ssh/id_ed25519
     chmod 600 ~/.ssh/id_ed25519
 else
     echo "No SSH Private Key found in Bitwarden. Skipping SSH key setup."

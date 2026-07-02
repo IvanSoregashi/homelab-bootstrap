@@ -6,9 +6,11 @@
 #   1. Ensure storage paths (/srv/encrypted, /srv/data)
 #   2. Create directory structure + app directories
 #   3. Bootstrap secrets from Bitwarden
-#   4. Install Restic and optionally restore from backup
+#   4. Install Restic
 #   5. Clone private repository (Docker Compose, configs)
 #   6. Connect to Tailnet
+#   7. System optimization (eMMC write reduction)
+#   8. Restore from backup
 # ==============================================================================
 
 set -euo pipefail
@@ -100,7 +102,7 @@ bash "${SCRIPT_DIR}/scripts/bootstrap.sh"
 echo -e "  ${GREEN}✔${NC} Secrets bootstrapped."
 
 # ------------------------------------------------------------------
-# Step 4: Install Restic and optionally restore
+# Step 4: Install Restic
 # ------------------------------------------------------------------
 echo -e "\n${BOLD}[4/7] Backup Tool Installation${NC}"
 
@@ -108,22 +110,18 @@ source "${SCRIPT_DIR}/lib/restic.sh"
 install_restic
 echo -e "  ${GREEN}✔${NC} Restic installed."
 
-echo ""
-read -r -p "  Restore data from Restic backup now? (y/n) [n]: " restore_now
-restore_now=${restore_now:-n}
-if [[ "$restore_now" =~ ^[Yy]$ ]]; then
-    bash "${SCRIPT_DIR}/scripts/restore-backup.sh"
-fi
-
 # ------------------------------------------------------------------
 # Step 5: Clone private repository
 # ------------------------------------------------------------------
 echo -e "\n${BOLD}[5/7] Private Repository Clone${NC}"
 
+read -r -p "  What is your GitHub username? [ivan]: " GITHUB_USER
+GITHUB_USER=${GITHUB_USER:-ivan}
+
 read -r -p "  Clone the homelab-private repository? (y/n) [n]: " clone_repo
 clone_repo=${clone_repo:-n}
 if [[ "$clone_repo" =~ ^[Yy]$ ]]; then
-    bash "${SCRIPT_DIR}/scripts/clone-private-repo.sh"
+    bash "${SCRIPT_DIR}/scripts/clone-private-repo.sh" "$GITHUB_USER"
 fi
 
 # ------------------------------------------------------------------
@@ -162,6 +160,16 @@ if os_is_debian; then
     if [[ "$run_opt" =~ ^[Yy]$ ]]; then
         bash "${SCRIPT_DIR}/scripts/optimize-system.sh" "$DATA_SRC"
     fi
+fi
+
+# ------------------------------------------------------------------
+# Restore from backup
+# ------------------------------------------------------------------
+echo ""
+read -r -p "  Restore data from Restic backup now? (y/n) [n]: " restore_now
+restore_now=${restore_now:-n}
+if [[ "$restore_now" =~ ^[Yy]$ ]]; then
+    bash "${SCRIPT_DIR}/scripts/restore-backup.sh"
 fi
 
 # ------------------------------------------------------------------

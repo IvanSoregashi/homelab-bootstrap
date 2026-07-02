@@ -3,15 +3,33 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../lib/common.sh"
+source "${SCRIPT_DIR}/../lib/directory_layout.sh"
 
 header "              RESTORE FROM BACKUP"
 
-RESTIC_CORE_ENV="/srv/encrypted/apps/restic/core-env.sh"
-RESTIC_DATA_ENV="/srv/encrypted/apps/restic/data-env.sh"
+RESTIC_CORE_ENV="${SECURE_MOUNT}/apps/restic/core-env.sh"
+RESTIC_DATA_ENV="${SECURE_MOUNT}/apps/restic/data-env.sh"
 
 if [ ! -f "$RESTIC_CORE_ENV" ] || [ ! -f "$RESTIC_DATA_ENV" ]; then
     warn "Restic environment files not found. Run bootstrap first."
     exit 1
+fi
+
+# Safety check: warn if target paths have existing files (restic overwrites silently)
+any_existing=false
+for mp in "$SECURE_MOUNT" "$DATA_MOUNT"; do
+    file_count=$(find "$mp" -type f 2>/dev/null | wc -l)
+    if [ "$file_count" -gt 0 ]; then
+        warn "${mp} has ${file_count} existing file(s) — restore will overwrite data."
+        any_existing=true
+    fi
+done
+if $any_existing; then
+    read -r -p "  Continue anyway? (y/n) [n]: " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo "  Aborting restore."
+        exit 0
+    fi
 fi
 
 echo "  Which repository would you like to restore from?"
@@ -42,8 +60,9 @@ case "$restore_choice" in
         read -r -p "Enter snapshot ID to restore (or 'latest'): " snapshot_id
         snapshot_id=${snapshot_id:-latest}
 
-        read -r -p "Target directory for restore [default: /tmp/restore-${label,,}]: " target
-        target=${target:-/tmp/restore-${label,,}}
+        echo "  Restoring to original paths (/) — files land where they were backed up from."
+        read -r -p "  Override target directory [default: /]: " target
+        target=${target:-/}
 
         if [ "$snapshot_id" = "latest" ]; then
             run restic restore latest --target "$target"
@@ -51,8 +70,7 @@ case "$restore_choice" in
             run restic restore "$snapshot_id" --target "$target"
         fi
 
-        echo -e "\n${GREEN}✔ ${label} backup restored to ${target}.${NC}"
-        echo "  Manually move files to their proper locations as needed."
+        echo -e "\n${GREEN}✔ ${label} backup restored to original paths under ${target}.${NC}"
         ;;
     3)
         echo "  Restoring both repositories sequentially..."

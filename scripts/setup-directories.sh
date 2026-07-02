@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../lib/common.sh"
 source "${SCRIPT_DIR}/../lib/platform.sh"
+source "${SCRIPT_DIR}/../lib/directory_layout.sh"
 
 # --- Argument Validation ---
 if [ "$#" -ne 2 ]; then
@@ -36,21 +37,13 @@ check_mount_safety "$DATA_PATH" "Data"
 # --- Consolidated Directory Creation ---
 echo -e "\n--> Creating directory structure..."
 
-# Tier 1: Encrypted (core data)
-mkdir -p "${SECURE_PATH}/vault"
-mkdir -p "${SECURE_PATH}/archive"
-mkdir -p "${SECURE_PATH}/webdav"
-mkdir -p "${SECURE_PATH}/db-dumps"
-mkdir -p "${SECURE_PATH}/apps/restic"
-mkdir -p "${SECURE_PATH}/apps/syncthing"
-mkdir -p "${SECURE_PATH}/apps/calibre-config"
-mkdir -p "${SECURE_PATH}/apps/immich/db"
+for dir in "${SECURE_DIRS[@]}"; do
+    mkdir -p "$dir"
+done
 
-# Tier 2: Bulk (data)
-mkdir -p "${DATA_PATH}/gallery/immich"
-mkdir -p "${DATA_PATH}/books"
-mkdir -p "${DATA_PATH}/downloads"
-mkdir -p "${DATA_PATH}/backups"
+for dir in "${DATA_DIRS[@]}"; do
+    mkdir -p "$dir"
+done
 
 # --- Permission Alignment ---
 echo -e "\n--> Aligning permissions..."
